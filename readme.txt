@@ -1,4 +1,3 @@
-Git is a distributed version control system.
-Git is free software.
-Git tracks changes.
-Git has a mutable index called stage.
+2018-12-8
+重构代码 增加了背景类 实现了背景图片移动
+增加玩家飞机类 能够使用a w d s键对玩家飞机控制
