@@ -1,4 +1,5 @@
 import pygame
+import random
 
 WIDTH=450
 HEIGHT=680
@@ -21,7 +22,6 @@ class Bkground:
 			self.pos[i]-=2;
 			if(self.pos[i]<-HEIGHT):
 				self.pos[i]=HEIGHT
-
 
 #玩家类
 class Player(pygame.sprite.Sprite):
@@ -75,6 +75,48 @@ class Bullet(pygame.sprite.Sprite):
 
 	def update(self):
 		self.rect.y-=self.speed
+		if self.rect.bottom<=0:
+			self.kill()												#删除子弹(子弹越界时)
+
+
+#敌机类
+class Enemy(pygame.sprite.Sprite):
+	
+	enemy_imgs=[['img/enemy0.png','img/enemy0_down1.png','img/enemy0_down2.png','img/enemy0_down3.png','img/enemy0_down4.png'],
+				['img/enemy1.png'],['img/enemy2.png']];
+	for i in range(0,len(enemy_imgs)):
+		for j in range(0,len(enemy_imgs[i])):
+			enemy_imgs[i][j]=pygame.image.load(enemy_imgs[i][j])	#加载图片
+
+	#初始化敌机
+	def __init__(self):
+		super().__init__()
+		self.id=0						#图片下标编号
+		self.state=0					#状态(方便绘制不同图片)
+		self.image=Enemy.enemy_imgs[self.id][self.state]
+		self.rect=self.image.get_rect()
+		self.speed=random.randint(4,9)										#速度
+		self.rect.topleft=(random.uniform(0,WIDTH-self.rect.w),-self.rect.height) 	#设置坐标
+
+	def update(self,bullets):
+		self.rect.y+=self.speed
+
+		if self.state>0 or (self.state==0 and self.__is_collision(bullets)):
+			self.state+=1
+			if self.state<len(Enemy.enemy_imgs[self.id]):
+				self.image=Enemy.enemy_imgs[self.id][self.state]			#更新图片
+
+		if self.rect.top>=HEIGHT or self.state>len(Enemy.enemy_imgs[self.id]):
+			self.kill()												#删除敌机(敌机越界时或者)
+
+	#判断是否与子弹碰撞
+	def __is_collision(self,bullets):
+		for bullet in bullets:
+			if self.rect.colliderect(bullet.rect):
+				bullet.kill()										#消灭敌机后子弹销毁
+				return True
+
+		return False
 
 	
 
