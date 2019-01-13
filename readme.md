@@ -13,5 +13,4 @@
 ## **2019-1-13**
 <font size=3>重构部分代码，结构更加清晰合理 后期还需要增加新功能</font>
 
-
-![avatar](/img/game_picture.png)
+![avatar](blob/master/img/game_picture.PNG)
