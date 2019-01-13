@@ -52,7 +52,7 @@ while player.is_kill():
 	bk.move()
 	player.update(pygame.time.get_ticks(),enemys)
 	if player.is_alive():
-		player.move(pygame.key.get_pressed())						#根据按键控制玩家飞机移动
+		player.move(pygame.key.get_pressed())					#根据按键控制玩家飞机移动
 	bullets.update()											#更新子弹位置
 	enemys.update(bullets,down_enemys)							#检测子弹与敌机碰撞 更新位置或加入死亡的飞机精灵组
 
@@ -60,7 +60,7 @@ while player.is_kill():
 		for down_enemy in down_enemys:
 			down_enemy.down_update()
 
-#	print(len(down_enemys))											#测试剩余多少子弹
+#	print(len(down_enemys))										#测试剩余多少子弹
 
 	count+=1													#计数器控制频率
 	pygame.display.flip()										#更新屏幕画面
