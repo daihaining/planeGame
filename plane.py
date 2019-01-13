@@ -35,7 +35,7 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self,init_pos):
 		super().__init__()
 
-		self.image=Player.player_imgs[0]
+		self.image=Player.player_imgs[0].convert_alpha()
 		self.rect=self.image.get_rect()
 		self.rect.topleft=init_pos
 		self.num=0								#图片编号(同时记录状态)
@@ -55,7 +55,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.num+=1
 			if self.num<len(Player.player_imgs):
-				self.image=Player.player_imgs[self.num]
+				self.image=Player.player_imgs[self.num].convert_alpha()
 
 			self.update_time=current_time+60
 
@@ -81,6 +81,10 @@ class Player(pygame.sprite.Sprite):
 
 	#返回玩家是否存活
 	def is_alive(self):
+		return self.num<2
+
+	#判断玩家飞机死亡动画是否播放完成
+	def is_kill(self):
 		return self.num<len(Player.player_imgs)
 
 
@@ -115,8 +119,8 @@ class Enemy(pygame.sprite.Sprite):
 	def __init__(self):
 		super().__init__()
 		self.id=Enemy.__init_enemy_id()						#不同飞机编号
-		self.state=0										#状态(方便绘制不同图片)
-		self.image=Enemy.enemy_imgs[self.id][self.state]
+		self.down_index=0									#死亡时的图片下标(方便图片)
+		self.image=Enemy.enemy_imgs[self.id][self.down_index].convert_alpha()
 		self.rect=self.image.get_rect()
 		self.speed=random.randint(5,10)						#速度
 		self.rect.topleft=(random.uniform(0,WIDTH-self.rect.w),-self.rect.height) 	#设置坐标
@@ -124,19 +128,27 @@ class Enemy(pygame.sprite.Sprite):
 		self.blood=self.id*2+1									#敌机血量(根据飞机类型不同血量不同)
 		self.sum_blood=self.blood 								#敌机总血量方便绘制血条
 
-	def update(self,bullets):
+	def update(self,bullets,down_enemys):
 
 		if self.blood>0:						#敌机血量大于零时
 			self.rect.y+=self.speed
 			self.__is_collision(bullets)
 
-		if self.blood==0:
-			self.state+=1
-			if self.state<len(Enemy.enemy_imgs[self.id]):
-				self.image=Enemy.enemy_imgs[self.id][self.state]			#更新图片
+		if self.blood==0:						#飞机血量为0加入死亡的飞机精灵组
+			self.kill()
+			down_enemys.add(self)
 
-		if self.rect.top>=HEIGHT or self.state>len(Enemy.enemy_imgs[self.id]):
-			self.kill()												#删除敌机(敌机越界时或者)
+		if self.rect.top>=HEIGHT:
+			self.kill()							#删除敌机(敌机越界时或者)
+
+	#飞机死亡时的更新
+	def down_update(self):
+
+		self.down_index+=1	
+		if self.down_index>=len(Enemy.enemy_imgs[self.id]):		#到最后一张死亡图片 飞机无需更新
+			self.kill()
+			return
+		self.image=Enemy.enemy_imgs[self.id][self.down_index].convert_alpha()	#更新图片
 
 	#判断是否与子弹碰撞
 	def __is_collision(self,bullets):
@@ -148,12 +160,11 @@ class Enemy(pygame.sprite.Sprite):
 	def draw(self,screen):
 		screen.blit(self.image,self.rect)
 		#绘制血条
-		if self.id>0:
+		if self.id>0 and self.blood>0:
 			scale=self.blood/self.sum_blood
-			pygame.draw.rect(screen,(0,255,0),(self.rect.x,self.rect.y-12,self.rect.w*scale,2))
-			pygame.draw.rect(screen,(255,0,0),(self.rect.x+self.rect.w*scale,self.rect.y-12,self.rect.w*(1-scale),2))
-
-
+			pygame.draw.rect(screen,(0,255,0),(self.rect.x,self.rect.y-12,int(self.rect.w*scale),2))
+			pygame.draw.rect(screen,(255,0,0),(self.rect.x+int(self.rect.w*scale),self.rect.y-12,int(self.rect.w*(1-scale)),2))
+	
 	#产生不同飞机
 	@staticmethod
 	def __init_enemy_id():
